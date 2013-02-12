@@ -1,7 +1,6 @@
 package eg
 
 import language.existentials
-import language.higherKinds
 
 object ExistentialQuantification extends App {
 
