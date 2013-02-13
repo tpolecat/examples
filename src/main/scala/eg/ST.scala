@@ -51,22 +51,6 @@ object ST extends App {
 
   println(z.unsafePerformIO)
 
-//  {
-//    trait RServeConn[A]
-//
-//    import State._
-//
-//    // Some combinators and lifted operations for StateT
-//    def lift[M[+_]: Monad, S, A](f: State[S, A]) = StateT[M, S, A](f(_).pure[M])
-//    def liftM[M[+_]: Functor, S, A](f: M[A]) = StateT[M, S, A](s => f.map((s, _)))
-//    def initT[M[+_]: Monad, S] = lift[M, S, S](init[S])
-//    def modifyT[M[+_]: Monad, S](f: S => S) = lift[M, S, Unit](modify[S](f))
-//    def putT[M[+_]: Monad, S](s: S) = lift[M, S, Unit](put(s))
-//    def getsT[M[+_]: Monad, S, A](f: S => A) = lift[M, S, A](gets(f))
-//
-//    val nonNaN: Double => EitherT[RServeConn, String, Double] = x =>
-//      if (x.isNaN) EitherT.left(state("NaN"))
-//      else EitherT.right(state(x))
-//  }
+
 }
 
