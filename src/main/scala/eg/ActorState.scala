@@ -18,11 +18,15 @@ object ActorState extends App {
     private final val actor = Actor[A]({
       // Close over a local cell containing our state.
       var state = initialState
-      (a: A) => state = act(a)(state).unsafePerformIO._1
+      (a: A) => state = act(a).exec(state).unsafePerformIO
     }, _.printStackTrace)
 
     final def !(a: A): Unit = actor ! a
 
+    def queue(a:A) = IO { actor ! a }.liftIO[IOState]
+    
+    def nop = IO().liftIO[IOState]
+    
     def act(a: A): IOState[Unit]
 
   }
@@ -33,6 +37,7 @@ object ActorState extends App {
         _ <- modify[Int](_ + s.length).lift[IO]
         t <- get.lift[IO]
         _ <- putStrLn("added " + s + "; total length is " + t).liftIO[IOState]
+        _ <- if (t < 20) act("foo") else nop
       } yield ()
   }
 
