@@ -12,9 +12,6 @@ object ST extends App {
   // ST actions must be parameterized by their thread "S", which always remains free
   def a[S]: ST[S, Int] = returnST(66).map(_ + 1)
 
-  
-  a[RealWorld].unsafePerformIO
-  
   // In order to run an action, you need to construct a Forall, which is awkward.
   // Note that it fixes the return type.
   val forall = new Forall[({ type λ[σ] = ST[σ, Int] })#λ] { def apply[S] = a }
@@ -27,12 +24,11 @@ object ST extends App {
   implicitly[Forall[({ type λ[σ] = ST[σ, Int] })#λ] =:= ForallST[Int]]
 
   // this is pure
-  val x = runST(forall)
+  val x0 = runST(forall)
 
-  val xx = (a : ST[RealWorld,Int]).unsafePerformIO
-  
-  println(xx)
-  
+  // this may not be
+  val x1 = a[RealWorld].unsafePerformIO
+
   // this is in IO (no forall required)
   val z = for {
     n <- IO(1)
@@ -50,7 +46,6 @@ object ST extends App {
   } yield (n, x, y, a0.toList, b0.toList)
 
   println(z.unsafePerformIO)
-
 
 }
 
