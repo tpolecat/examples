@@ -1,7 +1,5 @@
 package eg
 
-import scalaz._
-import Scalaz._
 import scala.util.parsing.input.CharSequenceReader
 import scala.util.parsing.combinator.JavaTokenParsers
 import Quote._
@@ -36,14 +34,14 @@ case class JMap(values: Map[String, JExpr]) extends JExpr {
 
 object JExpr {
 
-  def parse(s: String) = Parser.go(s).toOption // for now
+  def parse(s: String) = Parser.go(s) // for now
 
   object Parser extends JavaTokenParsers {
 
-    def go(s: String): Validation[String, JExpr] = parseAll(expr, s) match {
-      case Success(s, _) => s.success
-      case Failure(f, _) => f.fail
-      case Error(f, _)   => f.fail
+    def go(s: String): Either[String, JExpr] = parseAll(expr, s) match {
+      case Success(s, _) => Right(s)
+      case Failure(f, _) => Left(f)
+      case Error(f, _)   => Left(f)
     }
 
     def expr: Parser[JExpr] =
