@@ -47,8 +47,13 @@ object ActorState extends App {
 
   Thread.sleep(10000)
 
-  // added apple; total length is 5
-  // added orange; total length is 11
-  // added pear; total length is 15
+//	added apple; total length is 5
+//	added foo; total length is 8
+//	added foo; total length is 11
+//	added foo; total length is 14
+//	added foo; total length is 17
+//	added foo; total length is 20
+//	added orange; total length is 26
+//	added pear; total length is 30
 
 }

@@ -24,6 +24,6 @@ object StateTExample extends App {
   val (s, i) = a.unsafePerformIO
 
   println("result was %d, final state was %s".format(i, s))
-
+    
 }
 

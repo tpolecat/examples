@@ -52,6 +52,6 @@ object JExprCheck extends Properties("JExpr") {
     case JMap(m) => shrink(m).map(JMap)
   }
 
-  property("Parsing") = forAll { (e: JExpr) => JExpr.parse(e.toString) == Some(e) }
+  property("Parsing") = forAll { (e: JExpr) => JExpr.parse(e.toString) == Right(e) }
 
 }

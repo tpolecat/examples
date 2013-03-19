@@ -20,5 +20,5 @@ object StateExample extends App {
  
   println(action2(3))       // Get the final state and the result
   println(action2.eval(3))  // Or just the result
- 
+   
 }

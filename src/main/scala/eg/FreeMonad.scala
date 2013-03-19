@@ -14,10 +14,10 @@ object MapOp {
   implicit val MapOpFunctor: Functor[MapOp] = new Functor[MapOp] {
     def map[A, B](kv: MapOp[A])(f: A => B) = kv match {
       case Put(k, v, q) => Put(k, v, f compose q)
-      case Get(k, q)    => Get(k,    f compose q)
-      case Del(k, q)    => Del(k,    f compose q)
+      case Get(k, q) => Get(k, f compose q)
+      case Del(k, q) => Del(k, f compose q)
     }
-  } 
+  }
 }
 
 object FreeMapOp {
@@ -29,24 +29,30 @@ object FreeMapOp {
   def del(k: String): Action[Option[String]] = Suspend(Del(k, Return(_)))
 
   implicit class RunnableMapAction[A](a: Action[A]) {
-    
+
+//      @tailrec final def runJMap(m: java.util.HashMap[String, String]): A =
+//      a.resume match { // N.B. resume.fold() doesn't permit TCO
+//        case -\/(a) => a match {
+//          case Put(k, v, q) => q(Option(m put (k, v))) runJMap m
+//          case Get(k, q) => q(Option(m get k)) runJMap m
+//          case Del(k, q) => q(Option(m remove k)) runJMap m
+//        }
+//        case \/-(a) => a
+//      }
+      
     // CAUTION: Unsafe operation. Run once only.
-    @tailrec final def runJMap(m: java.util.HashMap[String, String]): A =
-      a.resume match { // N.B. resume.fold() doesn't permit TCO
-        case -\/(a) => a match {
-          case Put(k, v, q) => q(Option(m put   (k, v))) runJMap m
-          case Get(k,    q) => q(Option(m get    k))     runJMap m
-          case Del(k,    q) => q(Option(m remove k))     runJMap m
-        }
-        case \/-(a) => a
-      }
-  
+    def runJMap2(m: java.util.HashMap[String, String]): A = a.go(_ match {
+      case Put(k, v, q) => q(Option(m put (k, v)))
+      case Get(k, q) => q(Option(m get k))
+      case Del(k, q) => q(Option(m remove k))
+    })
+
   }
 
 }
 
 object Main {
-    
+
   def main(args: Array[String]) {
     val conf = new java.util.HashMap[String, String]
     conf put ("ak", "av")
@@ -80,7 +86,7 @@ object Main {
         e9 <- a9
       } yield List(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9)
 
-    val r = q runJMap conf
+    val r = q runJMap2 conf
 
     r.zipWithIndex foreach {
       case (i, j) => println(j + ": " + i)
