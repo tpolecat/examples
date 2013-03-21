@@ -12,14 +12,15 @@ object PhantomTypes {
       BurritoBuilder[SpecifiedBeans](beans = Some(s))
 
     def build(implicit ev: S =:= SpecifiedBeans) = "here's your burrito"
+      
   }
 
   object BurritoBuilder {
     def empty = BurritoBuilder[UnspecifiedBeans](None)
   }
 
-  BurritoBuilder.empty.build // won't compile, no beans
+//BurritoBuilder.empty.build // won't compile, no beans
   BurritoBuilder.empty.withBeans("pinto").build // ok
-  BurritoBuilder.empty.withBeans("pinto").withBeans("black") // won't compile, ambiguous beans
+//BurritoBuilder.empty.withBeans("pinto").withBeans("black") // won't compile, ambiguous beans
 
 }
