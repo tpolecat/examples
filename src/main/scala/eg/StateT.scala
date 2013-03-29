@@ -3,7 +3,7 @@ package eg
 import scalaz.State._
 import scalaz.StateT
 import scalaz.effect.IO
-import scalaz.effect.IO._
+import scalaz.effect.IO.putStrLn
 import scalaz.effect.stateTEffect.StateTMonadIO
 
 object StateTExample extends App {

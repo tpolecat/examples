@@ -27,18 +27,18 @@ object ST extends App {
   val x0 = runST(forall)
 
   // this may not be
-  val x1 = a[RealWorld].unsafePerformIO
+  val x1 = a[IvoryTower].unsafePerformIO
 
   // this is in IO (no forall required)
   val z = for {
     n <- IO(1)
-    v <- newVar[RealWorld](20)
+    v <- newVar[IvoryTower](20)
     _ <- v |= 4
     _ <- v.mod(_ * 2)
     x <- a // calling a pure ST action from IO
     y <- v.read
     _ <- putStrLn("x was " + x)
-    a <- newArr[RealWorld, String](10, "x")
+    a <- newArr[IvoryTower, String](10, "x")
     b <- a.write(2, "bar")
     _ <- b.write(3, "baz")
     a0 <- a.freeze
