@@ -12,8 +12,8 @@ object FBounds {
   trait Foo extends A[Foo]
   trait Bar extends A[Bar]
 
-  val f = (??? : Foo).foo
-  val b = (??? : Bar).foo
+  val f:Foo = (??? : Foo).foo
+  val b:Bar = (??? : Bar).foo
   
 }
 
