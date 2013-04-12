@@ -2,6 +2,7 @@ package eg
 
 import scalaz.State._
 import scalaz.StateT
+import scalaz.std.option._
 import scalaz.effect.IO
 import scalaz.effect.IO.putStrLn
 import scalaz.effect.stateTEffect.StateTMonadIO
@@ -11,7 +12,7 @@ object StateTExample extends App {
   // To avoid the type lambda ({type λ[+a] = StateT[IO,String,a]})#λ
   // in the call to liftIO below, we will just make an alias.
   type StringIO[+A] = StateT[IO, String, A]
-    
+
   // The tricky part is the lifting. 
   val action: StringIO[Int] =
     for {
@@ -24,6 +25,6 @@ object StateTExample extends App {
   val (s, i) = a.unsafePerformIO
 
   println("result was %d, final state was %s".format(i, s))
-    
+
 }
 

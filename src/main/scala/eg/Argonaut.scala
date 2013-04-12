@@ -1,7 +1,7 @@
 package eg
 
-//import scalaz._
-//import Scalaz._
+import scalaz._
+import Scalaz._
 import argonaut._
 import Argonaut._
 import scala.concurrent.future
@@ -12,7 +12,7 @@ import scala.util.Failure
 // from http://argonaut.io/doc/quickstart/ 
 object ArgonautTest extends App {
 
-  case class Tweets(page: Int, next: String, query: String, results: List[Tweet])
+  case class Tweets(page: Int, next: Option[String], query: String, results: List[Tweet])
 
   object Tweets {
 
@@ -49,6 +49,14 @@ object ArgonautTest extends App {
   p.onComplete {
     case Success(string) =>
 
+      println(string)
+      
+      val x = string.decode[Tweets]
+      x match {
+        case -\/(\/-((s, h))) => println(s, h.toList)
+        case z => println(z)
+      }
+      
       // Parse and decode the string to your data type using its codec.
       val message = string.decodeOption[Tweets] match {
         case None => "Could not decode Tweets."

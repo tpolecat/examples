@@ -6,9 +6,9 @@ package eg
  */
 trait FixedState[S] {
 
-  type State[A] = S => (S, A)
+  type State[+A] = S => (S, A)
 
-  implicit class StateOps[A](run: State[A]) {
+  implicit class StateOps[+A](run: State[A]) {
     def map[B](f: A => B): State[B] = { s =>
       val (s0, a) = run(s)
       (s0, f(a))
@@ -19,7 +19,7 @@ trait FixedState[S] {
     }
   }
 
-  implicit class AnyOpts[A](a: A) {
+  implicit class AnyOpts[+A](a: A) {
     def unit[S]: State[A] = (_, a)
   }
 

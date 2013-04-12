@@ -34,6 +34,5 @@ object Pascal extends App {
     try a finally println(System.currentTimeMillis - s)
   }
 
-  time(println(pascal(100, 200)))
-
+  
 }
