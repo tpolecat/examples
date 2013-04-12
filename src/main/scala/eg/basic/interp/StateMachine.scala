@@ -11,17 +11,25 @@ import eg.basic.ASTStatement._
 
 trait StateMachine {
 
+  /** Type alias for a disjunction of `Halted` and something else. */
+  type Answer[+A] = Halted \/ A // Inference croaks if we use a type lambda for this in the definition of `Op`
+
+  /**
+   * The type of operations for our iterpreter. An operation consumes a `Running` state and returns either a new state
+   * and the result, or a `Halted` state (optionally with an `Error`).
+   */
+  type Op[+A] = StateT[Answer, Running, A]
+
   /**
    * State of a running machine, with the program, program counter, stack, and bindings.
    */
   sealed case class Running(
-      p: Program, 
-      pc: Int, 
-      stack: List[Option[Int]] = Nil, 
-      bindings: Map[Symbol, Variant] = Map(),
-      loops: List[(Symbol, Int, Int)] = Nil
-      ) {
-    
+    p: Program,
+    pc: Int,
+    stack: List[Option[Int]] = Nil,
+    bindings: Map[Symbol, Variant] = Map(),
+    loops: List[(Symbol, Int, Int)] = Nil) {
+
     require(p.isDefinedAt(pc)) // TODO: program should be a zipper, making this unnecessary
 
     /** Compute the next line number after `n`, if any. */
@@ -31,15 +39,6 @@ trait StateMachine {
 
   /** State of a halted machine, with the last known running state and the `Error` that halted execution, if any. */
   sealed case class Halted(finalState: Running, error: Option[Error])
-
-  /** Type alias for a disjunction of `Halted` and something else. */
-  type Answer[+A] = Halted \/ A // Inference croaks if we use a type lambda for this in the definition of `Op`
-
-  /**
-   * The type of operations for our iterpreter. An operation consumes a `Running` state and returns either a new state
-   * and the result, or a `Halted` state (optionally with an `Error`).
-   */
-  type Op[+A] = StateT[Answer, Running, A]
 
   // LIFTED STATE OPERATIONS
 

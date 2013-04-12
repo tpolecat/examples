@@ -2,15 +2,16 @@ package eg.basic
 
 import language.implicitConversions
 import scala.collection.SortedMap
+import ASTExpr._
+import ASTStatement._
+import Variants._
 
 trait DSL {
 
-  import ASTExpr._
-  import ASTStatement._
-  import Variants._
+  // This is the only var in the program. Not sure how to get rid of it.
+  var prog: Program = SortedMap()
 
-  protected var prog: Program = SortedMap()
-
+  // Line numbers
   implicit class pimpInt(pc: Int) {
 
     // Update our program. Impure, sorry.
@@ -48,9 +49,11 @@ trait DSL {
   }
 
   // Library functions
-  def TAB(n: Int) = " " * n
-  def INT(e: Expr) = Int0(e)
+  // TODO: more of these, better
+  def TAB(n: Int) = " " * n // this is actually syntax in the spec ... TODO: fix this
+  def INT(e: SExpr) = SExpr(Int0(e.a))
 
+  // Expressions
   case class SExpr(a: Expr) {
     def =?(b: SExpr): SExpr = SExpr(Bin(a, EQ, b.a))
     def <>(b: SExpr): SExpr = SExpr(Bin(a, NE, b.a))
@@ -64,65 +67,22 @@ trait DSL {
     def /(b: SExpr): SExpr = SExpr(Bin(a, Div, b.a))
   }
 
+  // Variables and Literals
   implicit def Sym2SExpr(s: Symbol) = SExpr(Var(s))
   implicit def Str2SExpr(s: String) = SExpr(Lit(Variant(s)))
   implicit def Int2SExpr(n: Int) = SExpr(Lit(Variant(n)))
+  implicit def Ibl2SExpr(d: Double) = SExpr(Lit(Variant(d)))
 
-  def INT(e: SExpr) = SExpr(Int0(e.a))
+  // Numeric variables
+  val A = 'A; val B = 'B; val C = 'C; val D = 'D; val E = 'E; val F = 'F; val G = 'G;
+  val H = 'H; val I = 'I; val J = 'J; val K = 'K; val L = 'L; val M = 'M; val N = 'N;
+  val O = 'O; val P = 'P; val Q = 'Q; val R = 'R; val S = 'S; val T = 'T; val U = 'U;
+  val V = 'V; val W = 'W; val X = 'X; val Y = 'Y; val Z = 'Z; ;
 
-  // So we can use common variables without quoting
-  protected val A = 'A
-  protected val B = 'B
-  protected val C = 'C
-  protected val D = 'D
-  protected val E = 'E
-  protected val F = 'F
-  protected val G = 'G
-  protected val H = 'H
-  protected val I = 'I
-  protected val J = 'J
-  protected val K = 'K
-  protected val L = 'L
-  protected val M = 'M
-  protected val N = 'N
-  protected val O = 'O
-  protected val P = 'P
-  protected val Q = 'Q
-  protected val R = 'R
-  protected val S = 'S
-  protected val T = 'T
-  protected val U = 'U
-  protected val V = 'V
-  protected val W = 'W
-  protected val X = 'X
-  protected val Y = 'Y
-  protected val Z = 'Z
-
-  protected val A$ = 'A$
-  protected val B$ = 'B$
-  protected val C$ = 'C$
-  protected val D$ = 'D$
-  protected val E$ = 'E$
-  protected val F$ = 'F$
-  protected val G$ = 'G$
-  protected val H$ = 'H$
-  protected val I$ = 'I$
-  protected val J$ = 'J$
-  protected val K$ = 'K$
-  protected val L$ = 'L$
-  protected val M$ = 'M$
-  protected val N$ = 'N$
-  protected val O$ = 'O$
-  protected val P$ = 'P$
-  protected val Q$ = 'Q$
-  protected val R$ = 'R$
-  protected val S$ = 'S$
-  protected val T$ = 'T$
-  protected val U$ = 'U$
-  protected val V$ = 'V$
-  protected val W$ = 'W$
-  protected val X$ = 'X$
-  protected val Y$ = 'Y$
-  protected val Z$ = 'Z$
+  // String variables
+  val A$ = 'A$; val B$ = 'B$; val C$ = 'C$; val D$ = 'D$; val E$ = 'E$; val F$ = 'F$; val G$ = 'G$;
+  val H$ = 'H$; val I$ = 'I$; val J$ = 'J$; val K$ = 'K$; val L$ = 'L$; val M$ = 'M$; val N$ = 'N$;
+  val O$ = 'O$; val P$ = 'P$; val Q$ = 'Q$; val R$ = 'R$; val S$ = 'S$; val T$ = 'T$; val U$ = 'U$;
+  val V$ = 'V$; val W$ = 'W$; val X$ = 'X$; val Y$ = 'Y$; val Z$ = 'Z$;
 
 }

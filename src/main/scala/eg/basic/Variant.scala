@@ -2,26 +2,36 @@ package eg.basic
 
 import scalaz._
 import Scalaz._
+import Errors._
 
 object Variants {
 
-  import Errors._
-
+  /** Types are used in error reporting and to classify variables. */
   sealed trait Type {
     def name: String
     override def toString = name
   }
 
-  case object TInteger extends Type { def name = "Integer" }
-  case object TString extends Type { def name = "String" }
-  case object TDouble extends Type { def name = "Real" }
+  /** Variants have specific types. */
+  sealed trait VariantType extends Type
+
+  /** General numeric type. Only used in error reporting. */
   case object TNumeric extends Type { def name = "Numeric" }
 
+  case object TInteger extends VariantType { def name = "Integer" }
+  case object TString extends VariantType { def name = "String" }
+  case object TDouble extends VariantType { def name = "Real" }
+
+  /**
+   * A value type that's either numeric or a `String`, and if it's numeric it's either an `Int` or a `Double`. This
+   * type is isomorphic to `(Int \/ Double) \/ String`, but it turns out to be nice to have distinct constructors and
+   * a place to hang the operations.
+   */
   sealed trait Variant {
-	
+
     type VOp = Variant.VOp
-	type Answer = Variant.Answer
-    
+    type Answer = Variant.Answer
+
     def + : VOp
     def - : VOp
     def * : VOp
@@ -40,23 +50,37 @@ object Variants {
     def unary_~ : Answer
     def unary_- : Answer
 
-    def vtype: Type
+    def vtype: VariantType
 
   }
 
   object Variant {
+
     type Answer = Validation[Error, Variant]
     type VOp = Variant => Answer
 
+    /**
+     * Construct a `Variant` from the passed `Double`, which will be demoted to `Int` if this can be done without loss
+     * of precision. Numerics will be stored as `Int` whenever possible; the result of an operation on two `Double`
+     * values might be an `Int`.
+     */
     def apply(d: Double): Variant = VNumber(if (d == d.toInt) -\/(d.toInt) else \/-(d))
+
+    /** Construct a `Variant` from the passed `Int`. */
     def apply(i: Int): Variant = VNumber(-\/(i))
+
+    /** Construct a `Variant` from the passed `String`. */
     def apply(s: String) = VString(s)
+
   }
 
+  /** Boolean value true is the numeric value `-1` */
   val T: Variant = VNumber(-\/(-1))
+
+  /** Boolean value false is the numeric value `0` */
   val F: Variant = VNumber(-\/(0))
 
-  /** Variant numeric type whose representation is Int if possible, or Double if needed. */
+  /** `Variant` numeric type whose representation is `Int` if possible, or `Double` if needed. */
   case class VNumber(e: Int \/ Double) extends Variant {
 
     def vtype = e.fold(_ => TInteger, _ => TDouble)
@@ -85,7 +109,7 @@ object Variants {
 
     // Arithmetic
     private def aop(i: C[Int], d: C[Double], widen: P[Int] = (_, _) => false): VOp =
-      op((a, b) => VNumber(-\/(i(a, b))).success, (a, b) => VNumber(d(a, b)).success, widen)
+      op((a, b) => VNumber(-\/(i(a, b))).success, (a, b) => Variant(d(a, b)).success, widen)
 
     // Comparison 
     private def cop(i: P[Int], d: P[Double]): VOp =
@@ -115,11 +139,7 @@ object Variants {
 
   }
 
-  object VNumber {
-    def apply(d: Double): VNumber = VNumber(if (d == d.toInt) -\/(d.toInt) else \/-(d))
-    def apply(i: Int): VNumber = VNumber(-\/(i))
-  }
-
+  /** `Variant` string type. */
   case class VString(s: String) extends Variant {
     def vtype = TString
 
