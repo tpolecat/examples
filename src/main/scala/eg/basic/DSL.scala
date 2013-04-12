@@ -56,8 +56,12 @@ trait DSL {
     def <>(b: SExpr): SExpr = SExpr(Bin(a, NE, b.a))
     def <(b: SExpr): SExpr = SExpr(Bin(a, LT, b.a))
     def >(b: SExpr): SExpr = SExpr(Bin(a, GT, b.a))
+    def <=(b: SExpr): SExpr = SExpr(Bin(a, LE, b.a))
+    def >=(b: SExpr): SExpr = SExpr(Bin(a, GE, b.a))
     def +(b: SExpr): SExpr = SExpr(Bin(a, Plus, b.a))
     def -(b: SExpr): SExpr = SExpr(Bin(a, Minus, b.a))
+    def *(b: SExpr): SExpr = SExpr(Bin(a, Times, b.a))
+    def /(b: SExpr): SExpr = SExpr(Bin(a, Div, b.a))
   }
 
   implicit def Sym2SExpr(s: Symbol) = SExpr(Var(s))
