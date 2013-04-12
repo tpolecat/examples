@@ -1,10 +1,12 @@
-BASIC
-========
+Embedded BASIC
+==============
 
-This started out as a really dumb experiment, and it's still dumb but it's kind of interesting. It's an _embedded_ DSL for the execrable BASIC language, with a nice monadic interpreter.
+This is an embedded DSL and monadic interpreter for the execrable BASIC language. It's useless but kind of interesting. Still a work in progress, but you can write real programs as things stand. The `examples/` directory has a playable game that I typed in from a book written in 1978. 
 
-THIS IS SCALA CODE
+An Example
 ------------------
+
+This is Scala code.
 
 ```scala
 import eg.basic.BASIC
@@ -29,5 +31,7 @@ object HelloWorld extends App {
   b.run()
 
 }
-``
+```
+
+
 
