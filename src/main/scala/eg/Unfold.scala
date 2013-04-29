@@ -2,12 +2,17 @@ package eg
 
 object Unfold extends App {
 
-  // The general unfold
-  def unfold[A](a: A)(f: A => Option[A]): Stream[A] =
-    f(a).map(a => a #:: unfold(a)(f)).getOrElse(Stream.empty)
+  // Genera form
+  def unfold[A, B](a: A)(f: A => Option[(A, B)]): Stream[B] =
+    f(a).map { case (a, b) => b #:: unfold(a)(f) }.getOrElse(Stream.empty)
 
-  def hailstone(i: Int) = i #:: unfold(i) { n =>
-    if (n == 1) None else Some(if (n % 2 == 0) n / 2 else n * 3 + 1)
+  // A less general form
+  def unfold0[A](a: A)(f: A => Option[A]) =
+    unfold(a)(a => f(a).map(a => (a, a)))
+
+  def hailstone(i: Int) = i #:: unfold0(i) {
+    case 1 => None
+    case n => Some(if (n % 2 == 0) n / 2 else n * 3 + 1)
   }
 
   println(hailstone(27).toList)
