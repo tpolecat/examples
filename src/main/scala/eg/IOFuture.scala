@@ -6,24 +6,42 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scalaz.Bind
+import scalaz.syntax.monad._
 
-final class IOFuture[+A] private (f: => Future[A])(implicit ec: ExecutionContext) {
+// A future that you can only mess with inside of IO
+final class IOFuture[+A] private (f: Future[A])(implicit ec: ExecutionContext) {
 
-  def get: IO[A] = IO(Await.result(f, Duration.Inf))
-
-  def onComplete(a: A => IO[Unit]): IO[Unit] = IO(f.onSuccess { case r => a(r).unsafePerformIO })
-
-  def map[B](g: A => B): IOFuture[B] = new IOFuture(f.map(g))
+  def map[B](g: A => B): IOFuture[B] = 
+    new IOFuture(f.map(g))
 
   def flatMap[B](g: A => IOFuture[B]): IOFuture[B] =
-    new IOFuture(Future(Await.result(f.map(g), Duration.Inf).get.unsafePerformIO))
+    new IOFuture(Future(Await.result(f.map(g), Duration.Inf).await.unsafePerformIO))
 
+  def await: IO[A] = 
+    IO(Await.result(f, Duration.Inf))
+
+  def onComplete(a: A => IO[Unit]): IO[Unit] = 
+    IO(f.onSuccess { case r => a(r).unsafePerformIO })
+
+  def isComplete:IO[Boolean] = 
+    IO(f.isCompleted)
+  
 }
 
 object IOFuture {
 
   def newIOFuture[A](a: IO[A])(implicit ec: ExecutionContext): IO[IOFuture[A]] =
     IO(new IOFuture(Future(a.unsafePerformIO)))
+
+  implicit class pimpIO[A](a: IO[A])(implicit ec: ExecutionContext) {
+    def future: IO[IOFuture[A]] = newIOFuture(a)
+  }
+  
+  implicit object BindIOFuture extends Bind[IOFuture] {
+    def bind[A, B](fa: IOFuture[A])(f: A => IOFuture[B]): IOFuture[B] = fa flatMap f
+    def map[A, B](fa: IOFuture[A])(f: A => B): IOFuture[B] = fa map f
+  }
 
 }
 
@@ -33,22 +51,30 @@ object IOFutureTest extends App {
   import ExecutionContext.Implicits.global
 
   val x = for {
-    
+
     __ <- putStrLn("Creating futures")
-    c1 <- newIOFuture(getChar)
-    c2 <- newIOFuture(getChar)
+    c1 <- getChar.future
+    c2 <- getChar.future
+
+    // All of the onComplete calls can run in any order
+    _ <- c1.onComplete(c => putStrLn("(1) c1 got " + c))
+    _ <- c1.onComplete(c => putStrLn("(2) c1 got " + c))
+    _ <- c2.onComplete(c => putStrLn("c2 got " + c))
 
     pair = for {
       a <- c1
       b <- c2
     } yield (a, b)
 
-    __ <- putStrLn("waiting")
-    ps <- pair.get
-    _  <- putStrLn("got " + ps)
-    
+    _ <- putStrLn("waiting")
+    _ <- c1.isComplete.map(_.toString) >>= putStrLn // false
+    ps <- pair.await // blocks
+    _ <- c1.isComplete.map(_.toString) >>= putStrLn // true
+    _ <- putStrLn("got " + ps)
+
   } yield ps
-  
+
   println(x.unsafePerformIO)
 
 }
+
