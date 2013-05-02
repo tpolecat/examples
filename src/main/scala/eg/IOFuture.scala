@@ -10,13 +10,13 @@ import scalaz.Bind
 import scalaz.syntax.monad._
 
 // Wrap a future such that you can only see it in IO
-final class IOFuture[+A] private (f: Future[A])(implicit ec: ExecutionContext) {
+final class IOFuture[+A] private (private val f: Future[A])(implicit ec: ExecutionContext) {
 
   def map[B](g: A => B): IOFuture[B] =
     new IOFuture(f.map(g))
 
   def flatMap[B](g: A => IOFuture[B]): IOFuture[B] =
-    new IOFuture(Future(Await.result(f.map(g), Duration.Inf).await.unsafePerformIO))
+    new IOFuture(f.flatMap(a => g(a).f))
 
   def await: IO[A] =
     IO(Await.result(f, Duration.Inf))
