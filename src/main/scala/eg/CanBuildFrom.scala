@@ -5,8 +5,10 @@ import scala.collection.generic.CanBuildFrom
 import scala.reflect.ClassTag
 import scala.util.Sorting
 
-object CanBuildFromExample extends App {
+// SEE ALSO the ZipMany example, which is much more comprehensive
 
+object CanBuildFromExample extends App {
+  
   // Turn something into an array and then back into a collection of the same type
   def foo[A: ClassTag, C[A] <: Traversable[A]](as: C[A])(implicit cbf: CanBuildFrom[C[A], A, C[A]]): C[A] = {
     as.toArray.to[C] // convert to an array and back to original type
