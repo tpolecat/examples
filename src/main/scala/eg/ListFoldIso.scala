@@ -1,4 +1,4 @@
-package tiny.env
+package eg
 
 // The demonstrates the isomorphism between list and fold
 object FoldStuff extends App {

@@ -1,4 +1,4 @@
-package examples
+package eg
 
 import language.higherKinds
 
