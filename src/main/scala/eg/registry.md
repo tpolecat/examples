@@ -5,6 +5,8 @@ Yet another idea that falls into the category of "probably obvious, possibly wro
 
 In cases where you might have a registry in Java, you can instead have a statically-checked "registry" where the keys are vacuous types and the values are located via implicit search.
 
+This is interesting because the type parameter is never used and the type argument need not be inhabited.
+
 ```scala
 
 // A trait that we want a registry for, keyed on type parameter A
@@ -19,20 +21,16 @@ object Greeter {
 // Implementation for English
 sealed trait English 
 object English {
-  implicit val greeter = 
-    new Greeter[English] {
-      def sayHi(s:String): String =
-        s"Hello, $s!"
+  implicit object EnglishGreeter extends Greeter[English] {
+      def sayHi(s:String): String = s"Hello, $s!"
     }
 }
 
 // Implementation for Spanish
 sealed trait Español 
 object Español {
-  implicit val greeter = 
-    new Greeter[Español] {
-      def sayHi(s:String): String =
-        s"¡Hola, $s!"
+  implicit object GreeterEnEspañol extendsGreeter[Español] {
+      def sayHi(s:String): String = s"¡Hola, $s!"
     }
 }
 
