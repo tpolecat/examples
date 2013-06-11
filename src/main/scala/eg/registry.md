@@ -7,7 +7,7 @@ In cases where you might have a registry in Java, you can instead have a statica
 
 ```scala
 
-// A trait that we want a registry for
+// A trait that we want a registry for, keyed on type parameter A
 trait Greeter[A] {
   def sayHi(s:String): String
 }
