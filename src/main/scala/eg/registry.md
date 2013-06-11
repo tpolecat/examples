@@ -29,7 +29,7 @@ object English {
 // Implementation for Spanish
 sealed trait Español 
 object Español {
-  implicit object GreeterEnEspañol extendsGreeter[Español] {
+  implicit object GreeterEnEspañol extends Greeter[Español] {
       def sayHi(s:String): String = s"¡Hola, $s!"
     }
 }
