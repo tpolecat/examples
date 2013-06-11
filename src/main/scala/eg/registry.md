@@ -18,16 +18,16 @@ trait Greeter[A] {
 sealed trait English 
 object English {
   implicit object EnglishGreeter extends Greeter[English] {
-      def sayHi(s:String): String = s"Hello, $s!"
-    }
+    def sayHi(s:String): String = s"Hello, $s!"
+  }
 }
 
 // Implementation for Spanish
 sealed trait Español 
 object Español {
   implicit object GreeterEnEspañol extends Greeter[Español] {
-      def sayHi(s:String): String = s"¡Hola, $s!"
-    }
+    def sayHi(s:String): String = s"¡Hola, $s!"
+  }
 }
 
 def greet[A](s:String)(implicit ev: Greeter[A]) {
