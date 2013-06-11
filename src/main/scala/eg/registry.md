@@ -14,10 +14,6 @@ trait Greeter[A] {
   def sayHi(s:String): String
 }
 
-object Greeter {
-  def apply[A](implicit g: Greeter[A]) = g
-}
-
 // Implementation for English
 sealed trait English 
 object English {
