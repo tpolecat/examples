@@ -1,0 +1,48 @@
+Killing the Registry Pattern
+----------------------------
+
+Yet another idea that falls into the category of "probably obvious, possibly wrong, but I think it's interesting."
+
+In cases where you might have a registry in Java, you can instead have a statically-checked "registry" where the keys are vacuous types and the values are located via implicit search.
+
+```scala
+
+// A trait that we want a registry for
+trait Greeter[A] {
+  def sayHi(s:String): String
+}
+
+object Greeter {
+  def apply[A](implicit g: Greeter[A]) = g
+}
+
+// Implementation for English
+sealed trait English 
+object English {
+  implicit val greeter = 
+    new Greeter[English] {
+      def sayHi(s:String): String =
+        s"Hello, $s!"
+    }
+}
+
+// Implementation for Spanish
+sealed trait Español 
+object Español {
+  implicit val greeter = 
+    new Greeter[Español] {
+      def sayHi(s:String): String =
+        s"¡Hola, $s!"
+    }
+}
+
+def greet[A](s:String)(implicit ev: Greeter[A]) {
+  println(ev.sayHi(s))
+}
+
+greet[English]("Arthur")
+greet[Español]("Arturo")
+
+```
+
+
