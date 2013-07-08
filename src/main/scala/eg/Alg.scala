@@ -28,7 +28,7 @@ object Alg extends App {
   // ExprF has a functor
   implicit object ExprFFunctor extends Functor[ExprF] {
     def map[A, B](fa: ExprF[A])(eval: A => B): ExprF[B] = fa match {
-      case Const(i)         =>  Const(i)
+      case Const(i)         => Const(i)
       case Add(left, right) => Add(eval(left), eval(right))
       case Mul(left, right) => Mul(eval(left), eval(right))
     }
