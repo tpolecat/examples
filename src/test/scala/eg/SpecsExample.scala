@@ -10,6 +10,10 @@ class SpecsExample extends Specification {
       (1 + 2) must_== 3
     }
     
+    "hmm" in {
+      1 must_== 1
+    }
+    
   }
   
 }
