@@ -19,7 +19,7 @@ object Sock extends SafeApp {
       c <- IO(s.accept)
       _ <- IO(s.close) // only accept one client!
       _ <- IO(new Thread { override def run = serve(c).unsafePerformIO } .start)
-      _ <- IO("I will exit when the client disconnects.")
+      _ <- putStrLn("I will exit when the client disconnects.")
     } yield ()
 
   def serve(s: Socket): IO[Unit] =
