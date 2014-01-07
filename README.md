@@ -1,9 +1,33 @@
 examples
 ========
 
-Example usage of scalaz and uncommon Scala features.
+Extremely random crap, much of which needs revisiting. Buyer beware. Note that there are some example tests in `src/test/scala`.
 
-It's a bit of a jumble. Note that there are some example tests in `src/test/scala`.
+compiler args
+-------------
+
+Suggested compiler args for 2.10 ... for 2.11 need to add `-Xstrict-inference` and maybe more (TBD).
+
+```scala
+scalacOptions ++= Seq(
+  "-deprecation",           
+  "-encoding", "UTF-8",       // yes, this is 2 args
+  "-feature",                
+  "-language:existentials",
+  "-language:experimental.macros",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-unchecked",
+  "-Xfatal-warnings",       
+  "-Xlint",
+  "-Yno-adapted-args",      
+  "-Ywarn-all",             
+  "-Ywarn-dead-code",        // N.B. doesn't work with the ??? hole
+  "-Ywarn-numeric-widen",   
+  "-Ywarn-value-discard"   
+)
+```
+
 
 random crap
 -----------
