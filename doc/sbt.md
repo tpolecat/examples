@@ -8,7 +8,22 @@ I enthusiastically invite criticism and corrections. The point is to produce ano
 
 rob / `tpolecat`
 
-### Overview: the Big (but accurate) Picture
+### Itended Audience
+
+I will assume you are smart, yet you have been unable to grok SBT. This may be a small set.
+
+### TODO
+
+
+- "You need to specify the scope if the key in question is normally scoped. For example, the compile task, by default, is scoped to Compile and Test configurations, and does not exist outside of those scopes." yet you can inspect compile and it works. it picks the compile config but i can't figure out by what logic it does this
+neither do i
+- how can i refer to a key in another project? or can you? packageOptions in (Compile, packageBin) is ambiguous in a multi-project build
+- the doc talks about three axes: project, config, task … what is the build uri? is it constant or another axis? if it's constant why does it exist?
+- does {.}/* in delegates mean the same thing as */* in inspect tree?
+- what is the difference between Global and ThisBuild?
+- where are the parsers defined? the complete package/object doesn't seem to exist
+
+### Big (but accurate) Picture
 
 This is how SBT works. It is very simple. Cling to this.
 
@@ -116,6 +131,56 @@ Let's forget about the `foo:bar::` prefixes for now (these denote **scopes** whi
 [info]     +-*/*:streamsManager = Task[sbt.std.Streams[sbt.Init$ScopedKey[_ <: Any]]]
 [info]     
 ```
+
+Observe that some labels are bound to `Task` objects and others are bound to readable values. Here we see a distinction: there are **two** kinds of computations:
+
+ - **Tasks** are evaluated on demand, and thus can respond to changes in the environment (i.e., source files).
+ - **Settings** are evalated once, when the project is loaded.
+
+It may or may not be helpful to think: "Task is to Setting as `def` is to `val`." Note that the semantics here implies that tasks can depend on settings, but not vice-versa. 
+
+Ok now let's figure out what those long names mean.
+
+##### Scopes
+
+The general form for keys is:
+
+    {<build-uri>}<project-id>/config:intask::key
+
+The project uri seems to be constant and irrelevant. The project, config, and task are referred to as "axes", and a key might be associated with different computations for different combinations of axis values. A missing value for project or config means "current" and a `*` means "any". It's not clear what "current" config means.
+
+You can see this full form for a given key with `inspect`:
+
+```
+> inspect compile
+...
+[info] Provided by:
+[info]  {file:/private/tmp/test/}test/compile:compile
+...
+```
+
+So what we see here is *one of* the instances of the `compile` key. It turns out that a key can be defined in multiple scopes, and if you `inspect` a key you get, um, one of them. It's not at all clear which one you get. If you want to see all of them you can say `inspect definitions`:
+
+```
+> inspect definitions compile
+[info] 
+[info]  compile:compile
+[info]  test:compile
+```
+
+and then `inspect` again with a more specific key:
+
+```
+> inspect test:compile
+...
+[info] Provided by:
+[info]  {file:/private/tmp/test/}test/test:compile
+...
+```
+
+
+
+
 
 
 
