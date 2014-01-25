@@ -12,17 +12,6 @@ rob / `tpolecat`
 
 I will assume you are smart, yet you have been unable to grok SBT. This may be a small set.
 
-### TODO
-
-
-- "You need to specify the scope if the key in question is normally scoped. For example, the compile task, by default, is scoped to Compile and Test configurations, and does not exist outside of those scopes." yet you can inspect compile and it works. it picks the compile config but i can't figure out by what logic it does this
-neither do i
-- how can i refer to a key in another project? or can you? packageOptions in (Compile, packageBin) is ambiguous in a multi-project build
-- the doc talks about three axes: project, config, task … what is the build uri? is it constant or another axis? if it's constant why does it exist?
-- does {.}/* in delegates mean the same thing as */* in inspect tree?
-- what is the difference between Global and ThisBuild?
-- where are the parsers defined? the complete package/object doesn't seem to exist
-
 ### Big (but accurate) Picture
 
 This is how SBT works. It is very simple. Cling to this.
@@ -184,6 +173,16 @@ and then `inspect` again with a more specific key:
 
 
 
+### TODO
+
+
+- "You need to specify the scope if the key in question is normally scoped. For example, the compile task, by default, is scoped to Compile and Test configurations, and does not exist outside of those scopes." yet you can inspect compile and it works. it picks the compile config but i can't figure out by what logic it does this
+neither do i
+- how can i refer to a key in another project? or can you? packageOptions in (Compile, packageBin) is ambiguous in a multi-project build
+- the doc talks about three axes: project, config, task … what is the build uri? is it constant or another axis? if it's constant why does it exist?
+- does {.}/* in delegates mean the same thing as */* in inspect tree?
+- what is the difference between Global and ThisBuild?
+- where are the parsers defined? the complete package/object doesn't seem to exist
 
 
 
