@@ -11,9 +11,9 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   // Main
-  "org.scalaz" % "scalaz-core_2.10" % "7.0.0-M9",
-  "org.scalaz" % "scalaz-effect_2.10" % "7.0.0-M9",
-  "org.scalaz" % "scalaz-concurrent_2.10" % "7.0.0-M9",
+  "org.scalaz" % "scalaz-core_2.10" % "7.0.6",
+  "org.scalaz" % "scalaz-effect_2.10" % "7.0.6",
+  "org.scalaz" % "scalaz-concurrent_2.10" % "7.0.6",
   "io.argonaut" %% "argonaut" % "6.0-M3",
   "org.scala-stm" %% "scala-stm" % "0.7",
   // Test
