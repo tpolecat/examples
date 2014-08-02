@@ -13,7 +13,7 @@ object ActorState extends App {
 
   abstract class StatefulActor[S, A](initialState: S) {
 
-    type IOState[+A] = StateT[IO, S, A]
+    type IOState[A] = StateT[IO, S, A]
 
     private final val actor = Actor[A]({
       // Close over a local cell containing our state.

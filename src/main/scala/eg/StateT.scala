@@ -13,7 +13,7 @@ import scalaz.effect.MonadIO
 
 object StateTExample extends App {
 
-  //  // To avoid the type lambda ({type λ[+a] = StateT[IO,String,a]})#λ
+//  // To avoid the type lambda ({type λ[a] = StateT[IO,String,a]})#λ
   //  // in the call to liftIO below, we will just make an alias.
   //  type StringIO[+A] = StateT[IO, String, A]
   //
@@ -36,9 +36,9 @@ object StateTExample2 extends App {
 
   type Running = String
 
-  type M[+A] = EitherT[IO, Error, A]
+  type M[A] = EitherT[IO, Error, A]
 
-  type Op[+A] = StateT[({ type λ[+α] = EitherT[IO, Error, α] })#λ, Running, A]
+  type Op[A] = StateT[({ type λ[+α] = EitherT[IO, Error, α] })#λ, Running, A]
 
   implicit def liftio = new MonadIO[Op] {
     def point[A](a: => A): Op[A] = unit(a)

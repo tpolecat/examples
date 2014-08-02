@@ -10,7 +10,7 @@ import scalaz.Bind
 import scalaz.syntax.monad._
 
 // Wrap a future such that you can only see it in IO
-final class IOFuture[+A] private (private val f: Future[A])(implicit ec: ExecutionContext) {
+final class IOFuture[A] private (private val f: Future[A])(implicit ec: ExecutionContext) {
 
   def map[B](g: A => B): IOFuture[B] =
     new IOFuture(f.map(g))

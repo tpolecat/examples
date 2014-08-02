@@ -3,94 +3,65 @@ package eg
 import scala.language.higherKinds
 import scala.annotation.tailrec
 import scalaz._
-import scalaz.Free._
+import scalaz.syntax.monad._
+import scalaz.syntax.id._
+import scalaz.effect._
 
-sealed trait MapOp[+A]
-case class Put[A](k: String, v: String, q: Option[String] => A) extends MapOp[A]
-case class Get[A](k: String, q: Option[String] => A) extends MapOp[A]
-case class Del[A](k: String, q: Option[String] => A) extends MapOp[A]
+// adapted from example by @larsrh at http://scastie.org/5436
+object FreeMonad extends App {
 
-object MapOp {
-  implicit val MapOpFunctor: Functor[MapOp] = new Functor[MapOp] {
-    def map[A, B](kv: MapOp[A])(f: A => B) = kv match {
-      case Put(k, v, q) => Put(k, v, f compose q)
-      case Get(k, q) => Get(k, f compose q)
-      case Del(k, q) => Del(k, f compose q)
+  // Simple algebra of terminal operations
+  sealed trait TerminalOp[A]
+  case object ReadLine extends TerminalOp[String]
+  case class  WriteLine(value: String) extends TerminalOp[Unit]
+
+  // Free monad over the free functor of TerminalOp
+  type TerminalIO[A] = Free.FreeC[TerminalOp, A]
+
+  // The instance is not inferrable
+  implicit val monadTerminalIO: Monad[TerminalIO] =
+    Free.freeMonad[({type λ[α] = Coyoneda[TerminalOp, α]})#λ]
+
+  // Smart constructors
+  def readLine: TerminalIO[String] = Free.liftFC(ReadLine)
+  def writeLine(s: String): TerminalIO[Unit] = Free.liftFC(WriteLine(s))
+
+  // Natural transformation to IO
+  def terminalToIO: TerminalOp ~> IO = new (TerminalOp ~> IO) {
+    def apply[A](t: TerminalOp[A]): IO[A] = t match {
+      case ReadLine     => IO.readLn
+      case WriteLine(s) => IO.putStrLn(s)
     }
   }
-}
 
-object FreeMapOp {
-
-  type Action[A] = Free[MapOp, A]
-
-  def put(k: String, v: String): Action[Option[String]] = Suspend(Put(k, v, Return(_)))
-  def get(k: String): Action[Option[String]] = Suspend(Get(k, Return(_)))
-  def del(k: String): Action[Option[String]] = Suspend(Del(k, Return(_)))
-
-  implicit class RunnableMapAction[A](a: Action[A]) {
-
-//      @tailrec final def runJMap(m: java.util.HashMap[String, String]): A =
-//      a.resume match { // N.B. resume.fold() doesn't permit TCO
-//        case -\/(a) => a match {
-//          case Put(k, v, q) => q(Option(m put (k, v))) runJMap m
-//          case Get(k, q) => q(Option(m get k)) runJMap m
-//          case Del(k, q) => q(Option(m remove k)) runJMap m
-//        }
-//        case \/-(a) => a
-//      }
-      
-    // CAUTION: Unsafe operation. Run once only.
-    def runJMap2(m: java.util.HashMap[String, String]): A = a.go(_ match {
-      case Put(k, v, q) => q(Option(m put (k, v)))
-      case Get(k, q) => q(Option(m get k))
-      case Del(k, q) => q(Option(m remove k))
-    })
-
+  // Natural transformation to a Mock IO threaded through State
+  case class Mock(in: List[String], out: List[String])
+  object Mock {
+    def read(mock: Mock): (Mock, String) = mock.in match {
+      case Nil    => (mock, "")
+      case h :: t => (mock.copy(in = t), h)
+    }
+    def write(value: String)(mock: Mock): Mock =
+      mock.copy(out = value :: mock.out)
   }
-
-}
-
-object Main {
-
-  def main(args: Array[String]) {
-    val conf = new java.util.HashMap[String, String]
-    conf put ("ak", "av")
-    conf put ("bk", "bv")
-    conf put ("ck", "cv")
-
-    import FreeMapOp._
-
-    val a0 = get("ak")
-    val a1 = get("akX")
-    val a2 = del("akX")
-    val a3 = put("akX", "avX")
-    val a4 = get("ak")
-    val a5 = get("akX")
-    val a6 = del("akX")
-    val a7 = get("akX")
-    val a8 = get("ak")
-    val a9 = put("ak", "AV")
-
-    val q: Free[MapOp, List[Option[String]]] =
-      for {
-        e0 <- a0
-        e1 <- a1
-        e2 <- a2
-        e3 <- a3
-        e4 <- a4
-        e5 <- a5
-        e6 <- a6
-        e7 <- a7
-        e8 <- a8
-        e9 <- a9
-      } yield List(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9)
-
-    val r = q runJMap2 conf
-
-    r.zipWithIndex foreach {
-      case (i, j) => println(j + ": " + i)
+  type MockState[A] = State[Mock, A]
+  def terminalToState: TerminalOp ~> MockState = new (TerminalOp ~> MockState) {
+    def apply[A](t: TerminalOp[A]): MockState[A] = t match {
+      case ReadLine     => State(Mock.read)
+      case WriteLine(s) => State.modify(Mock.write(s))
     }
   }
+
+  // An example program
+  val program = for {
+    x <- readLine
+    y <- readLine
+    _ <- writeLine(x + " " + y)
+  } yield ()
+
+  // Run it with the mock
+  val init = Mock(in = List("Hello", "World"), out = List())
+  println(Free.runFC(program)(terminalToState).exec(init).out)
+
 }
 

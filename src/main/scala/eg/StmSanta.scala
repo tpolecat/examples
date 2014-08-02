@@ -10,7 +10,7 @@ import scalaz.effect.SafeApp
 // This trait makes Scala STM look like Haskell STM
 trait StmOps {
 
-  type STM[+A] = Reader[InTxn, A]
+  type STM[A] = Reader[InTxn, A]
   type TVar[A] = Ref[A]
   type ThreadId = Long
 
