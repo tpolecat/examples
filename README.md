@@ -5,6 +5,16 @@ Extremely random crap, much of which needs revisiting. Buyer beware. Note that t
 
 Also, I sometimes write [blog posts](http://tpolecat.github.io/) on Scala.
 
+starting a repl
+---------------
+
+I do it like this (the line is kind of long, sorry):
+
+```
+alias scalaz="pushd . && cd /tmp && sbt -sbt-create 'set scalaVersion := \"2.11.1\"' 'set libraryDependencies ++= Seq(\"org.scalaz\" %% \"scalaz-core\" % \"7.1.0\", \"org.scalaz\" %% \"scalaz-concurrent\" % \"7.1.0\", \"org.scalaz\" %% \"scalaz-effect\" % \"7.1.0\")' 'set initialCommands := \"import scalaz._; import Scalaz._\"' 'console' && popd"
+```
+
+
 random crap
 -----------
 
