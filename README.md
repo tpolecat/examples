@@ -14,6 +14,32 @@ I do it like this (the line is kind of long, sorry):
 alias scalaz="pushd . && cd /tmp && sbt -sbt-create 'set scalaVersion := \"2.11.1\"' 'set libraryDependencies ++= Seq(\"org.scalaz\" %% \"scalaz-core\" % \"7.1.0\", \"org.scalaz\" %% \"scalaz-concurrent\" % \"7.1.0\", \"org.scalaz\" %% \"scalaz-effect\" % \"7.1.0\")' 'set initialCommands := \"import scalaz._; import Scalaz._\"' 'console' && popd"
 ```
 
+**EDIT** paulp suggests doing something more sane:
+
+```bash
+#!/usr/bin/env bash
+#
+ 
+set -e
+ 
+pushd "$(mktemp -dt scalaz)"
+cat >build.sbt <<EOM
+scalaVersion := "2.11.6"
+
+libraryDependencies ++= Seq(
+  "org.scalaz" %% "scalaz-core" % "7.1.1",
+  "org.scalaz" %% "scalaz-concurrent" % "7.1.1",
+  "org.scalaz" %% "scalaz-effect" % "7.1.1"
+)
+
+initialCommands := "import scalaz._, Scalaz._"
+EOM
+ 
+sbt console
+popd
+```
+
+
 
 random crap
 -----------
