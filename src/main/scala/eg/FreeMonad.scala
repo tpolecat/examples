@@ -7,22 +7,24 @@ import scalaz.syntax.monad._
 import scalaz.syntax.id._
 import scalaz.effect._
 
-// adapted from example by @larsrh at http://scastie.org/5436
 object FreeMonad extends App {
 
   // Simple algebra of terminal operations
   sealed trait TerminalOp[A]
-  case object ReadLine extends TerminalOp[String]
-  case class  WriteLine(value: String) extends TerminalOp[Unit]
+  object TerminaIO {
+    case object ReadLine extends TerminalOp[String]
+    case class  WriteLine(value: String) extends TerminalOp[Unit]
+  }
+  import TerminaIO._
 
   // Free monad over the free functor of TerminalOp
   type TerminalIO[A] = Free.FreeC[TerminalOp, A]
 
-  // The instance is not inferrable
+  // It's a monad (but the instance is not inferrable)
   implicit val monadTerminalIO: Monad[TerminalIO] =
     Free.freeMonad[({type λ[α] = Coyoneda[TerminalOp, α]})#λ]
 
-  // Smart constructors
+  // Smart constructors in TerminalIO
   def readLine: TerminalIO[String] = Free.liftFC(ReadLine)
   def writeLine(s: String): TerminalIO[Unit] = Free.liftFC(WriteLine(s))
 
@@ -62,6 +64,9 @@ object FreeMonad extends App {
   // Run it with the mock
   val init = Mock(in = List("Hello", "World"), out = List())
   println(Free.runFC(program)(terminalToState).exec(init).out)
+
+  // Run it for real
+  Free.runFC(program)(terminalToIO).unsafePerformIO
 
 }
 
