@@ -7,6 +7,7 @@ import scalaz.syntax.monad._
 import scalaz.syntax.id._
 import scalaz.effect._
 
+// adapted from an example by @larsrh 
 object FreeMonad extends App {
 
   // Simple algebra of terminal operations
