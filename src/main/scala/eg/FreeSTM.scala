@@ -44,7 +44,7 @@ object FreeSTM {
   private type InTxnReader[A] = InTxn => A
   private val interpOp: Op ~> InTxnReader =
     new (Op ~> InTxnReader) {
-      def apply[A](fa: Op[A]): InTxn => A =
+      def apply[A](fa: Op[A]): InTxnReader[A] =
         fa match {
           case ReadTVar(fa)     => { implicit tx => fa.ref() }
           case WriteTVar(fa, a) => { implicit tx => fa.ref() = a }
@@ -55,7 +55,7 @@ object FreeSTM {
     }
 
   // Interpret STM to Reader
-  private def interpFC[A](a: STM[A]): InTxn => A =
+  private def interpFC[A](a: STM[A]): InTxnReader[A] =
     runFC[Op, InTxnReader, A](a)(interpOp)
 
   // orElse combinator
