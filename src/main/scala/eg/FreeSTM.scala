@@ -42,7 +42,7 @@ object FreeSTM {
 
   // Interpret Op to Reader
   private type InTxnReader[A] = InTxn => A
-  private def interpOp[A]: Op ~> InTxnReader =
+  private val interpOp: Op ~> InTxnReader =
     new (Op ~> InTxnReader) {
       def apply[A](fa: Op[A]): InTxn => A =
         fa match {
