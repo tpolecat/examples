@@ -32,7 +32,7 @@ object FreeSTM {
   // Free monad over free functor of Op
   type Coyo[A] = Coyoneda[Op, A]
   type STM[A]  = Free[Coyo, A]
-  implicit def MonadSTM: Monad[STM] = Free.freeMonad[Coyo]
+  implicit val MonadSTM: Monad[STM] = Free.freeMonad[Coyo]
 
   // Smart Constructors
   def newTVar[A](a: A): STM[TVar[A]] = liftFC[Op, TVar[A]](NewTVar(a))
