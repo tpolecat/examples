@@ -7,9 +7,9 @@ import scalaz.Scalaz._
 import scalaz.effect.SafeApp
 
 /** 
- * Pure functional STM implementation using a free monad to hide the underlying Scala STM.
- * Refs and transaction tokens are not observable. The end result looks a lot like Haskell STM.
- * See StmSanta.scala for a running use case.
+ * Pure functional STM using a free monad to hide the underlying Scala STM. Refs and transaction 
+ * tokens are not observable. The end result looks a lot like Haskell STM. See StmSanta.scala for 
+ * a running example.
  */
 object FreeSTM {
   import scalaz.Free.{ liftFC, runFC }
@@ -41,8 +41,9 @@ object FreeSTM {
   val retry: STM[Unit] = liftFC(Retry)
 
   // Interpret Op to Reader
-  private def interpFC[A]: Op ~> ({ type l[a] = InTxn => a })#l =
-    new (Op ~> ({ type l[a] = InTxn => a })#l) {
+  private type InTxnReader[A] = InTxn => A
+  private def interpOp[A]: Op ~> InTxnReader =
+    new (Op ~> InTxnReader) {
       def apply[A](fa: Op[A]): InTxn => A =
         fa match {
           case ReadTVar(fa)     => { implicit tx => fa.ref() }
@@ -54,15 +55,15 @@ object FreeSTM {
     }
 
   // Interpret STM to Reader
-  private def interp[A](a: STM[A]): InTxn => A =
-    runFC[Op, ({ type l[a] = InTxn => a })#l, A](a)(interpFC)
+  private def interpFC[A](a: STM[A]): InTxn => A =
+    runFC[Op, InTxnReader, A](a)(interpOp)
 
   // orElse combinator
   def orElse[A](a: STM[A], b: STM[A]): STM[A] =
-    liftFC(Delay(() => atomic(interp(a)).orAtomic(interp(b))))
+    liftFC(Delay(() => atomic(interpFC(a)).orAtomic(interpFC(b))))
 
   // Lift to IO
   def atomically[A](a: STM[A]): IO[A] =
-    IO(atomic(interp(a)))
+    IO(atomic(interpFC(a)))
 
 }
