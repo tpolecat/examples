@@ -1,62 +1,11 @@
 package eg
+
 import scalaz.effect.IO
 import scalaz.effect.IO._
 import scalaz._
 import scalaz.Scalaz._
-import scala.concurrent.stm.{ retry => stmRetry, _ }
-import scala.concurrent.ops.spawn
 import scalaz.effect.SafeApp
-
-// This trait makes Scala STM look like Haskell STM
-trait StmOps {
-
-  type STM[A] = Reader[InTxn, A]
-  type TVar[A] = Ref[A]
-  type ThreadId = Long
-
-  def readTVar[A](r: TVar[A]): STM[A] =
-    Reader { implicit t => r() }
-
-  def writeTVar[A](r: TVar[A], a: A): STM[Unit] =
-    Reader { implicit t => r() = a }
-
-  val retry: STM[Unit] =
-    Reader { implicit t => stmRetry }
-
-  def unit[A](a: A): STM[A] =
-    Reader { implicit t => a }
-
-  def newTVar[A](a: A): STM[TVar[A]] =
-    Reader { implicit t => Ref(a) }
-
-  def atomically[A](a: STM[A]): IO[A] =
-    IO(atomic(a.run))
-
-  def orElse[A](a: STM[A], b: STM[A]): STM[A] =
-    Reader { _ => atomic(a.run).orAtomic(b.run) }
-
-}
-
-// Some extra combinators used in the example
-trait ExtraOps extends StmOps {
-
-  def check(b: => Boolean): STM[Unit] =
-    b ? unit() | retry
-
-  def forkIO(a: IO[Unit]): IO[ThreadId] =
-    IO {
-      val t = new Thread { // yes, really
-        override def run: Unit =
-          a.unsafePerformIO
-      }
-      t.start()
-      t.getId()
-    }
-
-  def forever(act: IO[Unit]): IO[Unit] =
-    act.flatMap(_ => forever(act)) // N.B. important to never yield, otherwise we leak heap
-
-}
+import FreeSTM._
 
 /**
  *
@@ -169,10 +118,11 @@ object Santa extends SafeApp with ExtraOps {
   override def runc: IO[Unit] =
     for {
       elf_group <- newGroup(3)
-      _ <- (1 to 10).toList.map(n => elf(elf_group, n)).sequence
+      _ <- (1 |-> 10).traverse(elf(elf_group, _))
       rein_group <- newGroup(9)
-      _ <- (1 to 9).toList.map(n => reindeer(rein_group, n)).sequence
-      _ <- forever(santa(elf_group, rein_group))
+      _ <- (1 |-> 9).traverse(reindeer(rein_group, _))
+      _ <- santa(elf_group, rein_group).replicateM(100) // don't run forever, it gets boring
+      _ <- IO.putStrLn("Ok stopping ... could keep going but you get the idea")
     } yield ()
 
   def elf(gp: Group, id: Int): IO[ThreadId] =
@@ -222,5 +172,29 @@ object Santa extends SafeApp with ExtraOps {
     } yield ()
 
   }
+
+}
+
+
+// Some extra combinators used in the example
+trait ExtraOps {
+
+  type ThreadId = Long
+
+  def check(b: => Boolean): STM[Unit] =
+    b ? ().point[STM] | retry
+
+  def forkIO(a: IO[Unit]): IO[ThreadId] =
+    IO {
+      val t = new Thread { // yes, really
+        setDaemon(true)
+        override def run: Unit = a.unsafePerformIO
+      }
+      t.start()
+      t.getId()
+    }
+
+  def forever(act: IO[Unit]): IO[Unit] =
+    act.flatMap(_ => forever(act)) // N.B. important to never yield, otherwise we leak heap
 
 }
