@@ -1,3 +1,6 @@
+
+> HELLO, this is not ready for prime time. I was hoping to be able to explain sbt but I gave up.
+
 # Grokking SBT
 
 <img alt="confusion" align=right src="sbt.gif"/>
